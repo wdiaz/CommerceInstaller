@@ -1,0 +1,7 @@
+---
+# handlers file for roles/postfix
+- name: restart postfix
+  ansible.builtin.service:
+    use=service
+    name=postfix
+    state=restarted

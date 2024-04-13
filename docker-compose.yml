@@ -1,0 +1,41 @@
+version: '3.9'
+networks:
+  ox:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.17.0/24
+
+services:
+  oxweb:
+    container_name: oxweb
+    build:
+      context: oxweb
+      dockerfile: Dockerfile
+    tty: true
+    volumes:
+      - ./oxweb/apache/sites-enabled/:/etc/apache2/sites-enabled/
+      - ./oxweb/php/php.ini:/usr/local/etc/php/conf.d/extra-php-config.ini
+      - ./app:/var/www/ox/releases
+      - ./config:/root/config/
+      - ~/.ssh/:/root/.ssh
+    ports:
+      - "80:80"
+    networks:
+      ox:
+        ipv4_address: 192.168.17.6
+  oxdb:
+    image: postgres:15-alpine
+    container_name: oxdb
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=oxdb
+    tty: true
+    ports: ["5432"]
+    volumes:
+      - ./postgres:/var/lib/postgres/data
+    networks:
+      ox:
+        ipv4_address: 192.168.17.5

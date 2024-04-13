@@ -1,0 +1,58 @@
+---
+- name: Make sure lockfile is present (thinks there is a lock when it isn't present?)
+  become: true
+  become_user: root
+  wait_for:
+    path: /var/lib/dpkg/lock
+    state: present
+
+- name: Update apt
+  become_user: root
+  apt: update_cache=yes
+
+- name: Create ox group
+  group:
+    name: ox
+    gid: 1001
+    state: present
+
+- name: Create ox user
+  user:
+    name: ox
+    comment: "main ox user"
+    groups: "sudo"
+    append: yes
+    uid: 1001
+    shell: /bin/bash
+
+- name: Set server local
+  command: "echo \"America/New_York\" | sudo tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata"
+
+- name: Install System Packages
+  apt:
+    name:
+      - curl
+      - wget
+      - iputils-ping
+      - pv
+      - htop
+      - software-properties-common
+      - make
+    state: latest
+    autoclean: true
+
+- name: Install Extra Packages
+  apt:
+    name:
+      - git
+      - vim
+      - imagemagick
+      - xauth
+      - ca-certificates
+      - qpdf
+      - texlive
+      - texlive-latex-extra
+      - graphviz
+      - nodejs
+      - npm
+    state: latest

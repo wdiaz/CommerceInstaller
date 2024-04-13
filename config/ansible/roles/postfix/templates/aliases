@@ -1,0 +1,10 @@
+# Required aliases
+catch-all: root
+postmaster: root
+MAILER-DAEMON:  postmaster
+
+# Common aliases
+abuse:      postmaster
+spam:       postmaster
+
+# Other aliases

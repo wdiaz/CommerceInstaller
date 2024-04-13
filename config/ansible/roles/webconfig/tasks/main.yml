@@ -1,0 +1,70 @@
+---
+- name: Create Ox subfolder
+  ansible.builtin.file:
+    path: /var/www/ox
+    state: directory
+    mode: '0771'
+
+#- name: Create Ox main subfolder
+#  ansible.builtin.file:
+#    path: /var/www/ox/releases
+#    state: directory
+#    mode: '0771'
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: /var/www/ox/releases
+    dest: /var/www/ox/current
+    owner: ox
+    group: ox
+    state: link
+
+- name: UPDATE - Safe Directory
+  command: git config --global --add safe.directory /var/www/ox/releases
+  check_mode: no
+
+- name: Git clone
+  become_user: root
+  git:
+    accept_hostkey: true
+    repo: git@github.com:wdiaz/Commerce.git
+    key_file: ~/.ssh/id_rsa
+    dest: /var/www/ox/releases
+    clone: true
+    update: no
+    version: main
+
+- name: Install Ox
+  become_user: root
+  composer:
+    command: install
+    working_dir: /var/www/ox/current
+    no_dev: false
+
+- name: Create DB if not exists
+  command: 'php /var/www/ox/current/bin/console doctrine:database:create --if-not-exists'
+  register: create_db_output
+  changed_when: create_db_output.stdout is not search('already exists. Skipped')
+
+- name: Run migrations
+  command: 'php /var/www/ox/current/bin/console doctrine:migrations:migrate --no-interaction'
+  register: run_migrations_output
+  changed_when: run_migrations_output.stdout is not search('No migrations to execute')
+
+- name: Executing Yarn
+  become_user: root
+  command: "yarn install"
+  args:
+    chdir: /var/www/ox/current/
+
+- name: Building assets
+  become_user: root
+  command: "yarn dev"
+  args:
+    chdir: /var/www/ox/current/
+
+- name: Run fixtures
+  command: 'php /var/www/ox/current/bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate'
+  register: run_migrations_output
+  changed_when: run_migrations_output.stdout is not search('No migrations to execute')
+

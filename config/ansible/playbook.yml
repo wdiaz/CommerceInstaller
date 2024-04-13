@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: true
+  vars:
+    php_version: 8.1
+  roles:
+    - init
+    - role: 'ansible-role-ssl-certs'
+      ssl_certs_common_name: "ox.local"
+    - ansible-role-composer
+    - postfix
+    - apache2
+    - node
+    - webconfig

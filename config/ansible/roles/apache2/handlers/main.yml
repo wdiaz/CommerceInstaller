@@ -1,0 +1,9 @@
+---
+- name: restart apache
+  command: /etc/init.d/apache2 reload
+
+- name: reload apache
+  ansible.builtin.service:
+    use=service
+    name=apache2 
+    state=reloaded

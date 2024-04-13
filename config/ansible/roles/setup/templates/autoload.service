@@ -1,0 +1,10 @@
+[Unit]
+Description=Helper Daemon for OX
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/make -C /var/www/ox/current autoload
+ExecStartPre=/bin/sleep 10
+
+[Install]
+WantedBy=multi-user.target var-www-ox.mount

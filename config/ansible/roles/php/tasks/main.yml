@@ -1,0 +1,43 @@
+- name: Install PHP and Packages
+  become_user: root
+  apt:
+    name:
+      - php
+      - libapache2-mod-php
+      - php-cli
+      - php-curl
+      - php-gd
+      - php-xml
+      - php-common
+      - php-zip
+      - php-mbstring
+      - php-mysql
+      - php-gmp
+      - php-ldap
+      - php-bcmath
+      - php-readline
+      - php-posix
+    state: latest
+
+
+- name: Add PHP Modules
+  shell: phpenmod {{ item }}
+  notify: restart apache
+  with_items:
+    - zip
+    - mbstring
+    - pdo
+    - mysql
+    - xml
+
+- name: Set timezone (default America/New_York)
+  become_user: root
+  action: ini_file dest=/etc/php.d/timezone.ini section=Date option=date.timezone value=America/New_York mode=0600
+  notify:
+  - restart apache
+
+- name: Move adjusted php.ini file
+  become_user: root
+  template:
+    src: php.ini
+    dest: /usr/local/etc/php/php.ini

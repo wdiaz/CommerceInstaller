@@ -1,0 +1,57 @@
+---
+# tasks file for roles/postfix
+
+- name: Postfix | Make sure postfix latest package is installed
+  apt:
+    name:
+      - postfix
+    state: latest
+    autoclean: true
+  tags: postfix
+
+- name: Copy aliases
+  become_user: root
+  template:
+    src: aliases
+    dest: /etc/aliases
+  
+- name: Create newaliases
+  become_user: root
+  command: newaliases
+
+- name: Copy postfix to dest
+  become_user: root
+  when: ansible_distribution == "Ubuntu" 
+  template:
+    src: main.cf
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: 0644
+  tags: postfix
+
+- name: Copy local transport map
+  become_user: root
+  template:
+    src: transport
+    dest: /etc/postfix/transport
+    owner: root
+    group: root
+    mode: 0644
+  tags: postfix
+
+- name: postmap transport to transport.db
+  become_user: root
+  command: postmap /etc/postfix/transport 
+
+- name: postfix | set local hostname for postfix
+  become_user: root
+  when: ansible_distribution == "Ubuntu"
+  replace:
+    dest: /etc/postfix/main.cf
+    regexp: "ox.local"
+    replace: "{{ ansible_fqdn }}"
+  notify:
+    - restart postfix
+  tags: postfix
+

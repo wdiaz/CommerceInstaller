@@ -1,0 +1,57 @@
+---
+- name: Install Apache
+  become_user: root
+  apt:
+    name:
+      - apache2
+    state: latest
+
+- name: Install Apache Modules
+  shell: a2enmod {{ item }}
+  notify: restart apache
+  with_items:
+    - rewrite
+    - vhost_alias
+    - headers
+    - expires
+    - filter
+    - ssl
+- name: create logs directory
+  file:
+    path: /var/log/ox/
+    state: directory
+
+- name: Copy Symfony Ox project conf file
+  template:
+    src: ox.conf
+    dest: /etc/apache2/sites-available/ox.conf
+    owner: root
+    group: root
+    mode: 0770
+
+- name: Copy Mutex conf file
+  become_user: root
+  template:
+    src: mutex-file.conf
+    dest: /etc/apache2/conf-available/mutex-file.conf
+
+
+- name: Enable Apache Site
+  shell: a2ensite {{ item }}
+  become_user: root
+  notify: restart apache
+  with_items:
+    - ox
+
+- name: Enable Apache Mutex Fix
+  shell: a2enconf {{ item }}
+  become_user: root
+  notify: restart apache
+  with_items:
+    - mutex-file
+
+
+#- name: Change default apache site
+#  become_user: root
+#  template: src=vhost.conf.tpl dest=/etc/apache2/sites-available/default
+#  notify: restart apache

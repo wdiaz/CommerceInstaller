@@ -1,0 +1,12 @@
+---
+- name: Install N (Node version manager)
+  become_user: root
+  npm:
+    global: yes
+    state: present
+    name: n
+
+- name: Install "yarn" package globally.
+  npm:
+    name: yarn
+    global: yes

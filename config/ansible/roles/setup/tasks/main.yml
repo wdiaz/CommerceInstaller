@@ -1,0 +1,39 @@
+---
+- name: Load git user configuration
+  include_vars:
+    file: 'git_info.yml'
+    name: user
+
+- name: Assign git username
+  become_user: ox
+  git_config:
+    scope: global
+    name:  user.email
+    value: "{{ user.email }}"
+
+- name: Assign git email
+  become_user: ox
+  git_config:
+    scope: global
+    name:  user.name
+    value: "{{ user.name }}"
+
+- name: Assign git matching strategy
+  become_user: ox
+  git_config:
+    scope: global
+    name:  push.default
+    value: simple
+
+- name: Update profile with new paths
+  become_user: ox
+  template:
+    src: profile
+    dest: /home/ox/.profile
+
+- name: Systemd dev autoload task
+  become_user: root
+  template:
+    src: autoload.service
+    dest: /etc/systemd/system/autoload.service
+    mode: 644
