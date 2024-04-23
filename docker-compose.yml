@@ -39,3 +39,48 @@ services:
     networks:
       ox:
         ipv4_address: 192.168.17.5
+
+  node:
+    container_name: node
+    build:
+      context: node
+      dockerfile: Dockerfile
+    tty: true
+    volumes:
+      - ./node/app:/app
+    ports:
+      - "3000:3000"
+    networks:
+      ox:
+        ipv4_address: 192.168.17.7
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:8.13.0
+    ports:
+        - 9200:9200
+        - 9300:9300
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
+    environment:
+        - discovery.type=single-node
+        - xpack.security.enabled=false
+        - xpack.security.enrollment.enabled=true
+    networks:
+      ox:
+        ipv4_address: 192.168.17.8
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.13.2
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    depends_on:
+      - elasticsearch
+    entrypoint: ["./bin/kibana", "--allow-root"]
+    networks:
+      ox:
+        ipv4_address: 192.168.17.9
