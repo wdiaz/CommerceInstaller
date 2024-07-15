@@ -84,3 +84,13 @@ services:
     networks:
       ox:
         ipv4_address: 192.168.17.9
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - '1025:1025' # smtp server
+      - '8025:8025' # web ui
+    networks:
+      ox:
+        ipv4_address: 192.168.17.10

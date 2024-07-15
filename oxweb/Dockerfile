@@ -25,4 +25,4 @@ RUN useradd -rm -d /home/ox -s /bin/bash -g root -G sudo -u 1001 ox
 # [Optional] Set the default user. Omit if you want to keep the default as root.
 USER $USERNAME
 
-WORKDIR /root/config
+WORKDIR /var/www/ox/current
