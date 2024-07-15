@@ -9,6 +9,7 @@ networks:
 services:
   oxweb:
     container_name: oxweb
+    hostname: oxweb
     build:
       context: oxweb
       dockerfile: Dockerfile
@@ -26,6 +27,7 @@ services:
         ipv4_address: 192.168.17.6
   oxdb:
     image: postgres:15-alpine
+    hostname: oxdb
     container_name: oxdb
     restart: unless-stopped
     environment:
@@ -54,33 +56,17 @@ services:
       ox:
         ipv4_address: 192.168.17.7
 
-  elasticsearch:
-    container_name: elasticsearch
-    image: elasticsearch:8.13.0
-    ports:
-        - 9200:9200
-        - 9300:9300
+  api:
+    container_name: api
+    build:
+      context: api
+      dockerfile: Dockerfile
+    tty: true
     volumes:
-      - ./esdata:/usr/share/elasticsearch/data
-    environment:
-        - discovery.type=single-node
-        - xpack.security.enabled=false
-        - xpack.security.enrollment.enabled=true
-    networks:
-      ox:
-        ipv4_address: 192.168.17.8
-
-  kibana:
-    container_name: kibana
-    image: docker.elastic.co/kibana/kibana:8.13.2
+      - ./api/app:/app
+      - ~./m2:/root/m2
     ports:
-      - "5601:5601"
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
-    depends_on:
-      - elasticsearch
-    entrypoint: ["./bin/kibana", "--allow-root"]
+      - "8080:8080"
     networks:
       ox:
         ipv4_address: 192.168.17.9
